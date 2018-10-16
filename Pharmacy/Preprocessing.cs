@@ -13,14 +13,14 @@ namespace Pharmacy
     class Preprocessing
     {
         //vars
-        Bitmap processImage;
+        Bitmap preProcessImage;
         Bitmap tempImg;
         public string resultText;
 
         //preprocessing constructor
         public Preprocessing(Bitmap image)
         {
-            this.processImage = image;
+            this.preProcessImage = image;
         }
 
         //function that apply all the preprocessing effects to the image taken by the camera
@@ -43,9 +43,10 @@ namespace Pharmacy
         //method that crops the rectangle part of the image and returns it as a bitmap image
         public Bitmap CropImage()
         {
-            Crop filter = new Crop(new Rectangle(132, 82, 118, 78));
+            //cropper that only crop the rectangle part
+            Crop cropper = new Crop(new Rectangle(132, 82, 118, 78));
             // apply the filter
-            Bitmap croppedImg = filter.Apply(processImage);
+            Bitmap croppedImg = cropper.Apply(preProcessImage);
 
             return croppedImg;
         }
@@ -53,28 +54,28 @@ namespace Pharmacy
         //method that turns the image black and white 
         public void blackAndWhite()
         {
-            var bbv = CropImage();
-            Image<Bgr, Byte> myImage = new Image<Bgr, Byte>(bbv);
-            Image<Gray, byte> greyimg = myImage.Convert<Gray, byte>();
-            tempImg = greyimg.ToBitmap();
+            var croppedImg = CropImage();
+            Image<Bgr, Byte> imageToGrey = new Image<Bgr, Byte>(croppedImg);
+            Image<Gray, byte> greyImg = imageToGrey.Convert<Gray, byte>();
+            tempImg = greyImg.ToBitmap();
         }
 
         //method that adjusts the contrast of the image 
         public void SetContrast(double contrast)
         {
 
-            Bitmap newimg = new Bitmap(tempImg);
-            Bitmap bmap = (Bitmap)newimg.Clone();
+            Bitmap ToContrastImg = new Bitmap(tempImg);
+            Bitmap ContrastImg = (Bitmap)ToContrastImg.Clone();
             if (contrast < -100) contrast = -100;
             if (contrast > 100) contrast = 100;
             contrast = (100.0 + contrast) / 100.0;
             contrast *= contrast;
             Color c;
-            for (int i = 0; i < bmap.Width; i++)
+            for (int i = 0; i < ContrastImg.Width; i++)
             {
-                for (int j = 0; j < bmap.Height; j++)
+                for (int j = 0; j < ContrastImg.Height; j++)
                 {
-                    c = bmap.GetPixel(i, j);
+                    c = ContrastImg.GetPixel(i, j);
                     double pR = c.R / 255.0;
                     pR -= 0.5;
                     pR *= contrast;
@@ -99,11 +100,11 @@ namespace Pharmacy
                     if (pB < 0) pB = 0;
                     if (pB > 255) pB = 255;
 
-                    bmap.SetPixel(i, j,
+                    ContrastImg.SetPixel(i, j,
         Color.FromArgb((byte)pR, (byte)pG, (byte)pB));
                 }
             }
-            tempImg = (Bitmap)bmap.Clone();           
+            tempImg = (Bitmap)ContrastImg.Clone();           
         }
     }
 }

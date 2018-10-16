@@ -100,12 +100,11 @@
         }
 
         #endregion
-
-        private System.Windows.Forms.PictureBox CamPictureBox;
         private System.Windows.Forms.Button ProcessBtn;
         private System.Windows.Forms.TextBox ResultTextBox;
         private System.Windows.Forms.Timer timer;
         private System.Windows.Forms.CheckBox autoProcess;
+        public System.Windows.Forms.PictureBox CamPictureBox;
     }
 }
 

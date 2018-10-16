@@ -23,6 +23,7 @@ namespace Pharmacy
         public string process()
         {
             var ocr = new TesseractEngine("./tessdata", "eng", EngineMode.TesseractAndCube);
+            //ocv characters to be processed
             ocr.SetVariable("test", "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ:/");
             var page = ocr.Process(toProcessImg);
             return page.GetText();

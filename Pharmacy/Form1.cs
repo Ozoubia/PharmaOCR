@@ -16,18 +16,16 @@ namespace Pharmacy
 {
     public partial class Form1 : Form
     {
-        //frame , cam devices, and red rectangle variables
+        //frame , cam devices variables
         VideoCaptureDevice frame;
         FilterInfoCollection Devices;
-        Rectangle RectMark = new Rectangle(130, 80, 120, 80);
-        Thread newthread = new Thread(process_thread);
-        public static string secondThreadResult;
-        
+        //red rectangle in the center
+        Rectangle redRectangle = new Rectangle(130, 80, 120, 80);
         //main function
         public Form1()
         {
             InitializeComponent();
-            Start_cam();                       
+            Start_cam();
         }
 
         //start camera method
@@ -44,7 +42,7 @@ namespace Pharmacy
             }
             catch (Exception)
             {
-                MessageBox.Show("No camera detected plug in the camera and restart the app");               
+                MessageBox.Show("No camera detected plug in the camera and restart the app");
             }
         }
 
@@ -54,23 +52,24 @@ namespace Pharmacy
             try
             {
                 //clone the img      
-                Bitmap tempIMg = (Bitmap)e.Frame.Clone();
-                tempIMg.RotateFlip(RotateFlipType.Rotate180FlipY);
-                CamPictureBox.Image = tempIMg;
+                Bitmap imgBeforeRotate = (Bitmap)e.Frame.Clone();
+                imgBeforeRotate.RotateFlip(RotateFlipType.Rotate180FlipY);
+                CamPictureBox.Image = imgBeforeRotate;
 
                 //***this next line of code is for memory cleaning; will force a garbage collecting (cleaning) of the memory.***
                 long usedMemory = GC.GetTotalMemory(true);
             }
-            catch (Exception )
+            catch (Exception)
             {
                 //catch code
             }
         }
 
-        //drawing the red rectangle on the picture box 
+        //cam picture box paint event 
         private void CamPictureBox_Paint(object sender, PaintEventArgs e)
         {
-            e.Graphics.DrawRectangle(new Pen(Color.Red, 1), RectMark);
+            //drawing the red rectangle in the picture box
+            e.Graphics.DrawRectangle(new Pen(Color.Red, 1), redRectangle);
         }
 
         //stopping the camera when the form is closing
@@ -83,37 +82,32 @@ namespace Pharmacy
             //stopping the camera or frames
             frame.Stop();
             //stopping the timer
-            timer.Stop();            
+            timer.Stop();
         }
-        
+
         //process button click event
         private void ProcessBtn_Click(object sender, EventArgs e)
         {
+            //declaring image to be processed with the height and width of the picture box
             using (Bitmap savedImage = new Bitmap(CamPictureBox.ClientSize.Width,
                                CamPictureBox.ClientSize.Height))
-            {
+            {                
                 CamPictureBox.DrawToBitmap(savedImage, CamPictureBox.ClientRectangle);
-                //Preprocessing obj = new Preprocessing(savedImage);
-                GlobarVariables.tempImg = savedImage;
-                newthread.Start();
+                //sending image to be processed
+                Preprocessing obj = new Preprocessing(savedImage);  
+                
                 //showing the result in the text box       
-                ResultTextBox.Text = secondThreadResult;
+                ResultTextBox.Text = obj.applyAllEffects();
+                //showing only first line of the text
                 string resultFilteredText = ResultTextBox.Lines.FirstOrDefault();
-                ResultTextBox.Text = resultFilteredText;                 
+                ResultTextBox.Text = resultFilteredText;
             }
-        }
-
-        //second thread
-        private static void process_thread()
-        {
-            Preprocessing obj = new Preprocessing(GlobarVariables.tempImg);             
-            secondThreadResult = obj.applyAllEffects();
-            
         }
 
         //timer that ticks every 4 seconds 
         private void timer_Tick(object sender, EventArgs e)
         {
+            //declaring image to be processed with the height and width of the picture box
             using (Bitmap savedImage = new Bitmap(CamPictureBox.ClientSize.Width,
                                CamPictureBox.ClientSize.Height))
             {
@@ -121,6 +115,7 @@ namespace Pharmacy
                 Preprocessing obj = new Preprocessing(savedImage);
                 //showing the result in the text box       
                 ResultTextBox.Text = obj.applyAllEffects();
+                //showing only first line of the text
                 string resultFilteredText = ResultTextBox.Lines.FirstOrDefault();
                 ResultTextBox.Text = resultFilteredText;
             }
